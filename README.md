@@ -1,4 +1,4 @@
-# phloWA, Phlo WhatsApp gateway
+# phloWA - Phlo WhatsApp gateway
 
 WhatsApp Web gateway (whatsapp-web.js + Express) for the [Phlo](https://phlo.tech) framework. One process per instance; delivers inbound messages to the app through a secret webhook.
 
