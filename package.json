@@ -5,7 +5,7 @@
   "main": "phloWA.js",
   "keywords": [],
   "author": "q-ai.nl",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "axios": "^1.13.0",
     "express": "^5.1.0",
