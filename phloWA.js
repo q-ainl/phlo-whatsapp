@@ -37,7 +37,7 @@ module.exports = (sessionId, port, secret, webhook = null) => {
 	let latestQr = null
 	const startedAt = Date.now()
 
-	const qrToSvgDataUrl = (qrString) => {
+	const qrToSvgDataUrl = qrString => {
 		const qr = new QRCodeLib(-1, QRErrorCorrectLevel.L)
 		qr.addData(qrString)
 		qr.make()
@@ -72,18 +72,18 @@ module.exports = (sessionId, port, secret, webhook = null) => {
 		return new MessageMedia(parsed.mimetype || 'application/octet-stream', parsed.data, filename)
 	}
 
-	const inferAudioMime = (value) => {
+	const inferAudioMime = value => {
 		const parsed = parseDataUrl(value)
 		return parsed?.mimetype || 'audio/ogg; codecs=opus'
 	}
 
-	const toLocationText = (msg) => {
+	const toLocationText = msg => {
 		const lat = msg.location?.latitude ?? msg.lat ?? null
 		const lng = msg.location?.longitude ?? msg.lng ?? null
 		return lat != null && lng != null ? `${lat},${lng}` : null
 	}
 
-	const getChatInfo = async (msg) => {
+	const getChatInfo = async msg => {
 		try {
 			const chat = await msg.getChat()
 			return { name: chat?.name || null, isGroup: chat?.isGroup || false }
@@ -92,7 +92,7 @@ module.exports = (sessionId, port, secret, webhook = null) => {
 		}
 	}
 
-	const getContactInfo = async (msg) => {
+	const getContactInfo = async msg => {
 		try {
 			const contact = await msg.getContact()
 			return {
@@ -104,7 +104,7 @@ module.exports = (sessionId, port, secret, webhook = null) => {
 		}
 	}
 
-	const getContactById = async (id) => {
+	const getContactById = async id => {
 		if (!id) return { name: null, number: null }
 		try {
 			const contact = await client.getContactById(id)
@@ -117,7 +117,7 @@ module.exports = (sessionId, port, secret, webhook = null) => {
 		}
 	}
 
-	const normalizeMessage = async (msg) => {
+	const normalizeMessage = async msg => {
 		const media = msg.hasMedia ? await msg.downloadMedia().catch(() => null) : null
 		const chatInfo = await getChatInfo(msg)
 		const isGroup = chatInfo.isGroup || msg.from?.endsWith('@g.us')
@@ -152,9 +152,9 @@ module.exports = (sessionId, port, secret, webhook = null) => {
 		}
 	}
 
-	const shortenMediaContent = (content) => `${content.substr(0, 9)}.. - ${content.length}b`
+	const shortenMediaContent = content => `${content.slice(0, 9)}.. - ${content.length}b`
 
-	const logMessage = (msg) => {
+	const logMessage = msg => {
 		const logMsg = structuredClone(msg)
 		if (logMsg.media?.content) logMsg.media.content = shortenMediaContent(logMsg.media.content)
 		if (logMsg.quotedMsg?.media?.content) logMsg.quotedMsg.media.content = shortenMediaContent(logMsg.quotedMsg.media.content)
@@ -162,7 +162,7 @@ module.exports = (sessionId, port, secret, webhook = null) => {
 		console.log(logMsg)
 	}
 
-	const asyncRoute = (handler) => async (req, res) => {
+	const asyncRoute = handler => async (req, res) => {
 		try {
 			await handler(req, res)
 		} catch (error) {
@@ -171,7 +171,7 @@ module.exports = (sessionId, port, secret, webhook = null) => {
 		}
 	}
 
-	client.on('qr', (qr) => {
+	client.on('qr', qr => {
 		console.log(`\nScan QR for session "${sessionId}"`)
 		qrcode.generate(qr, { small: true })
 		clientState = 'qr'
@@ -186,22 +186,22 @@ module.exports = (sessionId, port, secret, webhook = null) => {
 		if (webhook) console.log(`\nWebhook active: ${webhook}`)
 	})
 	client.on('authenticated', () => console.log(`\nWhatsApp client "${sessionId}" authenticated`))
-	client.on('auth_failure', (message) => {
+	client.on('auth_failure', message => {
 		clientState = 'disconnected'
 		latestQr = null
 		console.error(`\nWhatsApp auth failure "${sessionId}": ${message}`)
 	})
-	client.on('disconnected', (reason) => {
+	client.on('disconnected', reason => {
 		clientReady = false
 		clientState = 'disconnected'
 		latestQr = null
 		console.error(`\nWhatsApp client "${sessionId}" disconnected: ${reason}`)
 	})
-	client.on('message_create', async (data) => {
+	client.on('message_create', async data => {
 		const id = data.id?._serialized || data.id || '-'
 		const from = data.author || data.from || '-'
 		const to = data.to || '-'
-		const text = (data.body || data.caption || '').replace(/\s+/g, ' ').trim().substr(0, 120)
+		const text = (data.body || data.caption || '').replace(/\s+/g, ' ').trim().slice(0, 120)
 		console.log(`\nmessage_create: ${data.type || 'unknown'} fromMe=${!!data.fromMe} from=${from} to=${to} id=${id}`)
 		text && console.log(text)
 	})
@@ -223,7 +223,7 @@ module.exports = (sessionId, port, secret, webhook = null) => {
 		next()
 	})
 
-	const postWebhook = async (payload) => {
+	const postWebhook = async payload => {
 		try {
 			const res = await axios.post(webhook, payload, { headers: { secret } })
 			console.log(`\nwebhook: ${res.status} ${res.statusText || 'OK'} id=${payload.id || '-'}`)
@@ -237,7 +237,7 @@ module.exports = (sessionId, port, secret, webhook = null) => {
 	}
 
 	if (webhook) {
-		client.on('message_create', async (data) => {
+		client.on('message_create', async data => {
 			if (data.from === 'status@broadcast' || data.to === 'status@broadcast') {
 				console.log(`\nskipped status@broadcast from=${data.from}`)
 				return
@@ -383,7 +383,7 @@ module.exports = (sessionId, port, secret, webhook = null) => {
 
 	app.listen(port, '127.0.0.1', () => console.log(`\nServer "${sessionId}" running on port ${port}`))
 
-	client.initialize().catch((error) => {
+	client.initialize().catch(error => {
 		console.error(error)
 		process.exitCode = 1
 	})
