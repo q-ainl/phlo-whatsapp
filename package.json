@@ -1,6 +1,6 @@
 {
   "name": "phloWA",
-  "version": ".9.9.1",
+  "version": "1.0.0-RC2",
   "description": "Phlo WhatsApp server",
   "main": "phloWA.js",
   "keywords": [],
