@@ -22,9 +22,14 @@ npm install   # deps: whatsapp-web.js, express, axios, qrcode-terminal
 Keep one small config file per instance so the gateway and its webhook are managed in one place:
 
 ```js
-// config/wa1.js
-require('../whatsapp/phloWA.js')('wa1', 8081, process.env.WA1_SECRET, 'https://app.example.com/receive/whatsapp/web/wa1')
+// config/wa1.js  (node-local, keep out of version control)
+require('../whatsapp/phloWA.js')('wa1', 8081, 'a-long-random-secret', 'https://app.example.com/receive/whatsapp/web/wa1')
 ```
+
+The secret is an inline literal on purpose: the Phlo Dashboard discovers each
+instance and proxies to it by reading `config/wa*.js`, so it must be a plain
+string here, not pulled from an env var the dashboard cannot see. Keep this
+file node-local and out of version control.
 
 Run each instance under a process manager, for example pm2:
 
