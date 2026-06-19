@@ -2,7 +2,7 @@
 
 WhatsApp Web gateway (whatsapp-web.js + Express) for the [Phlo](https://phlo.tech) framework. One process per WhatsApp number; inbound messages reach the app through a secret-protected webhook, outbound messages are sent through a local HTTP bridge.
 
-Phlo WhatsApp is the messaging half of the Phlo server layer, next to phloWS (the WebSocket layer built into the [Phlo Daemon](https://github.com/q-ainl/phlo-daemon)) for realtime. The engine's `WhatsApp` resource handles the webhook on the app side; the [Phlo Dashboard](https://github.com/q-ainl/phlo-dashboard) shows the status of every instance across the fleet.
+Phlo WhatsApp is the messaging half of the Phlo server layer, next to Phlo Realtime (the WebSocket layer built into the [Phlo Daemon](https://github.com/q-ainl/phlo-daemon)) for realtime. The engine's `WhatsApp` resource handles the webhook on the app side; the [Phlo Dashboard](https://github.com/q-ainl/phlo-dashboard) shows the status of every instance across the fleet.
 
 ## Usage
 ```js
