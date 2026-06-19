@@ -2,7 +2,7 @@
   "name": "phlo-whatsapp",
   "version": "1.0.0-RC2",
   "description": "Phlo WhatsApp server",
-  "main": "phlo-wa.js",
+  "main": "phlo-whatsapp.js",
   "keywords": [],
   "author": "q-ai.nl",
   "license": "MIT",

@@ -6,7 +6,7 @@ Phlo WhatsApp is the messaging half of the Phlo server layer, next to phloWS (th
 
 ## Usage
 ```js
-require('./phlo-wa.js')('wa1', 8081, '<secret>', 'https://app.example.com/receive/whatsapp/web/wa1')
+require('./phlo-whatsapp.js')('wa1', 8081, '<secret>', 'https://app.example.com/receive/whatsapp/web/wa1')
 ```
 Arguments: `(instanceId, port, secret, webhookUrl)`.
 
@@ -23,7 +23,7 @@ Keep one small config file per instance so the gateway and its webhook are manag
 
 ```js
 // config/wa1.js  (node-local, keep out of version control)
-require('../whatsapp/phlo-wa.js')('wa1', 8081, 'a-long-random-secret', 'https://app.example.com/receive/whatsapp/web/wa1')
+require('../whatsapp/phlo-whatsapp.js')('wa1', 8081, 'a-long-random-secret', 'https://app.example.com/receive/whatsapp/web/wa1')
 ```
 
 The secret is an inline literal on purpose: the Phlo Dashboard discovers each
