@@ -1,11 +1,16 @@
 {
   "name": "phlo-whatsapp",
-  "version": "1.0.0-RC2",
+  "version": "1.0.0-RC3",
   "description": "Phlo WhatsApp server",
   "main": "phlo-whatsapp.js",
   "keywords": [],
   "author": "q-ai.nl",
   "license": "MIT",
+  "files": [
+    "phlo-whatsapp.js",
+    "README.md",
+    "LICENSE"
+  ],
   "dependencies": {
     "axios": "^1.13.0",
     "express": "^5.1.0",
