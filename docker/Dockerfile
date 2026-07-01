@@ -4,6 +4,7 @@
 # WhatsApp account (scan the QR from the container logs on the first run), exposes
 # a small HTTP API to send text/images/polls/locations, and posts inbound messages
 # to WA_WEBHOOK with the shared WA_SECRET. The session persists in .wwebjs_auth.
+# Build from the repo root: docker build -f docker/Dockerfile .
 FROM node:20-slim
 
 RUN apt-get update \
@@ -13,10 +14,9 @@ RUN apt-get update \
 ENV PUPPETEER_SKIP_DOWNLOAD=1 \
     PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
-RUN mkdir -p /opt/phlo && cd /opt/phlo \
- && npm init -y >/dev/null 2>&1 \
- && npm install --no-audit --no-fund phlo-whatsapp
+COPY package.json phlo-whatsapp.js /opt/phlo/
+RUN cd /opt/phlo && npm install --omit=dev --no-audit --no-fund && rm -rf /root/.npm
 
-COPY boot.js /opt/phlo/boot.js
+COPY docker/boot.js /opt/phlo/boot.js
 WORKDIR /opt/phlo
 CMD ["node", "/opt/phlo/boot.js"]
