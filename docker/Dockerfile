@@ -14,8 +14,8 @@ RUN apt-get update \
 ENV PUPPETEER_SKIP_DOWNLOAD=1 \
     PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
-COPY package.json phlo-whatsapp.js /opt/phlo/
-RUN cd /opt/phlo && npm install --omit=dev --no-audit --no-fund && rm -rf /root/.npm
+COPY package.json package-lock.json phlo-whatsapp.js /opt/phlo/
+RUN cd /opt/phlo && npm ci --omit=dev --no-audit --no-fund && rm -rf /root/.npm
 
 COPY docker/boot.js /opt/phlo/boot.js
 WORKDIR /opt/phlo

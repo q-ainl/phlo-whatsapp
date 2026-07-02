@@ -1,0 +1,7 @@
+.git
+node_modules
+core.*
+.wwebjs_auth
+.wwebjs_cache
+*.log
+test
