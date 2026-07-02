@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="300" viewBox="0 0 760 300" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">
+	<rect width="760" height="300" rx="12" fill="#0d1117"/>
+	<text x="380" y="40" text-anchor="middle" fill="#e6edf3" font-size="19" font-weight="bold">One gateway per WhatsApp number</text>
+	<g>
+		<rect x="40" y="90" width="200" height="90" rx="8" fill="#101c16" stroke="#16c784" stroke-width="2"/>
+		<text x="60" y="118" fill="#16c784" font-size="14" font-weight="bold">Phlo app</text>
+		<text x="60" y="138" fill="#9da7b3" font-size="12">WhatsApp resource</text>
+		<text x="60" y="156" fill="#9da7b3" font-size="12">webhook /receive</text>
+	</g>
+	<g>
+		<rect x="280" y="90" width="200" height="90" rx="8" fill="#11241b" stroke="#16c784" stroke-width="2"/>
+		<text x="300" y="118" fill="#16c784" font-size="14" font-weight="bold">phlo-whatsapp</text>
+		<text x="300" y="138" fill="#9da7b3" font-size="12">whatsapp-web.js + Express</text>
+		<text x="300" y="156" fill="#9da7b3" font-size="12">session per instance</text>
+	</g>
+	<g>
+		<rect x="520" y="90" width="200" height="90" rx="8" fill="#101c16" stroke="#16c784" stroke-width="2"/>
+		<text x="540" y="118" fill="#16c784" font-size="14" font-weight="bold">WhatsApp Web</text>
+		<text x="540" y="138" fill="#9da7b3" font-size="12">one number, QR once</text>
+	</g>
+	<path d="M240 115 H 276" stroke="#3a4451" stroke-width="2" marker-end="url(#a)"/>
+	<text x="244" y="106" fill="#657386" font-size="11">HTTP bridge</text>
+	<path d="M280 155 H 244" stroke="#3a4451" stroke-width="2" marker-end="url(#a)"/>
+	<text x="248" y="174" fill="#657386" font-size="11">webhook + secret</text>
+	<path d="M480 115 H 516" stroke="#3a4451" stroke-width="2" marker-end="url(#a)"/>
+	<path d="M520 155 H 484" stroke="#3a4451" stroke-width="2" marker-end="url(#a)"/>
+	<text x="380" y="240" text-anchor="middle" fill="#9da7b3" font-size="12">outbound: app -&gt; local bridge -&gt; WhatsApp &#183; inbound: WhatsApp -&gt; gateway -&gt; secret-protected webhook</text>
+	<defs>
+		<marker id="a" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0 0L8 4L0 8z" fill="#3a4451"/></marker>
+	</defs>
+</svg>
