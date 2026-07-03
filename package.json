@@ -1,6 +1,6 @@
 {
   "name": "phlo-whatsapp",
-  "version": "1.0.0-RC4",
+  "version": "1.0.0",
   "description": "Phlo WhatsApp server",
   "main": "phlo-whatsapp.js",
   "keywords": [],
