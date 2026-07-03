@@ -1,3 +1,19 @@
+// Deliver a payload to the webhook, retrying transient failures (network, timeout, 5xx, 429) with bounded
+// backoff. Every attempt carries the same WhatsApp message id as the idempotency key, so a consumer that
+// dedupes on it treats a redelivery as a no-op. axios is injected so this stays unit-testable.
+const deliverWebhook = async (axios, url, payload, secret, { timeout = 10000, retries = 3, backoff = 500 } = {}) => {
+	const headers = { secret, 'idempotency-key': String(payload.id || '') }
+	for (let attempt = 1; attempt <= retries; attempt++){
+		try {
+			return await axios.post(url, payload, { headers, timeout })
+		} catch (error) {
+			const retriable = !error.response || error.response.status >= 500 || error.response.status === 429
+			if (attempt === retries || !retriable) throw error
+			await new Promise(r => setTimeout(r, backoff * 2 ** (attempt - 1)))
+		}
+	}
+}
+
 module.exports = (sessionId, port, secret, webhook = null) => {
 	const path = require('path')
 	const axios = require('axios')
@@ -223,9 +239,12 @@ module.exports = (sessionId, port, secret, webhook = null) => {
 		next()
 	})
 
+	const webhookTimeout = parseInt(process.env.WA_WEBHOOK_TIMEOUT, 10) || 10000
+	const webhookRetries = parseInt(process.env.WA_WEBHOOK_RETRIES, 10) || 3
+
 	const postWebhook = async payload => {
 		try {
-			const res = await axios.post(webhook, payload, { headers: { secret } })
+			const res = await deliverWebhook(axios, webhook, payload, secret, { timeout: webhookTimeout, retries: webhookRetries })
 			console.log(`\nwebhook: ${res.status} ${res.statusText || 'OK'} id=${payload.id || '-'}`)
 			if (res.data != null) console.log(res.data)
 		} catch (error) {
@@ -381,10 +400,14 @@ module.exports = (sessionId, port, secret, webhook = null) => {
 		res.send('ok')
 	}))
 
-	app.listen(port, '127.0.0.1', () => console.log(`\nServer "${sessionId}" running on port ${port}`))
+	// Loopback by default (bare-metal); a container sets WA_HOST=0.0.0.0 so a sibling container can reach it.
+	const listenHost = process.env.WA_HOST || '127.0.0.1'
+	app.listen(port, listenHost, () => console.log(`\nServer "${sessionId}" running on ${listenHost}:${port}`))
 
 	client.initialize().catch(error => {
 		console.error(error)
 		process.exitCode = 1
 	})
 }
+
+module.exports.deliverWebhook = deliverWebhook
