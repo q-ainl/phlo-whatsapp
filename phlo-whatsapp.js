@@ -1,8 +1,12 @@
+// The idempotency key identifies one EVENT, not one message: a message id fires an inbound event and then
+// several ack events (sent/delivered/read/played) that all share that id, so the key also carries the type
+// and the ack level. A delivery retry reuses the identical payload and therefore the identical key.
+const webhookKey = payload => [payload.id || '', payload.type || 'msg', payload.ack == null ? '' : payload.ack].filter(p => p !== '').join(':')
+
 // Deliver a payload to the webhook, retrying transient failures (network, timeout, 5xx, 429) with bounded
-// backoff. Every attempt carries the same WhatsApp message id as the idempotency key, so a consumer that
-// dedupes on it treats a redelivery as a no-op. axios is injected so this stays unit-testable.
+// backoff. axios is injected so this stays unit-testable.
 const deliverWebhook = async (axios, url, payload, secret, { timeout = 10000, retries = 3, backoff = 500 } = {}) => {
-	const headers = { secret, 'idempotency-key': String(payload.id || '') }
+	const headers = { secret, 'idempotency-key': webhookKey(payload) }
 	for (let attempt = 1; attempt <= retries; attempt++){
 		try {
 			return await axios.post(url, payload, { headers, timeout })

@@ -25,8 +25,17 @@ const mockAxios = (fail, error) => {
 	let res = await deliverWebhook(ax, 'http://hook', { id: 'MSG1' }, 'sek', { retries: 3, backoff: 1 })
 	ok(res.status === 200, 'transient failure is retried and then delivered')
 	ok(ax.calls.length === 2, 'exactly two attempts were made (one failure, one success)')
-	ok(ax.calls[0].opts.headers['idempotency-key'] === 'MSG1', 'every attempt carries the message id as the idempotency key')
+	ok(ax.calls[0].opts.headers['idempotency-key'] === ax.calls[1].opts.headers['idempotency-key'], 'a delivery retry reuses the same idempotency key')
 	ok(ax.calls[0].opts.timeout === 10000, 'a request timeout is set')
+
+	// The key identifies an event, not a message: acks of the same message get distinct keys.
+	const key = async payload => { const a = mockAxios(0); await deliverWebhook(a, 'http://hook', payload, 'sek', { retries: 1 }); return a.calls[0].opts.headers['idempotency-key'] }
+	const kInbound = await key({ id: 'M', type: 'chat' })
+	const kSent = await key({ id: 'M', type: 'ack', ack: 1 })
+	const kRead = await key({ id: 'M', type: 'ack', ack: 3 })
+	ok(kSent !== kRead, 'different ack statuses of one message yield different keys')
+	ok(kInbound !== kSent && kInbound !== kRead, 'the inbound message and its acks yield different keys')
+	ok(await key({ id: 'M', type: 'ack', ack: 3 }) === kRead, 'the same event yields a stable key')
 
 	// Gives up after the retry budget and rethrows.
 	ax = mockAxios(9, netErr)

@@ -40,6 +40,16 @@ pm2 start config/wa1.js --name wa1
 pm2 save
 ```
 
+## Environment
+
+| Variable | Default | Effect |
+| --- | --- | --- |
+| `WA_HOST` | `127.0.0.1` | Listen address. The Docker image sets `0.0.0.0` so a sibling container can reach it. |
+| `WA_WEBHOOK_TIMEOUT` | `10000` | Per-attempt webhook request timeout (ms). |
+| `WA_WEBHOOK_RETRIES` | `3` | Attempts before an inbound delivery is dropped (bounded exponential backoff on network/timeout/5xx/429). |
+
+The Docker entrypoint (`docker/boot.js`) also reads `WA_PORT`, `WA_WEBHOOK` and `WA_SECRET`, and refuses to start without a `WA_SECRET`.
+
 ## License
 
 MIT. See [LICENSE](LICENSE).
