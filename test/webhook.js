@@ -52,6 +52,14 @@ const mockAxios = (fail, error) => {
 	catch { threw = true }
 	ok(threw && ax.calls.length === 1, 'a non-retriable 4xx fails fast without retrying')
 
+	// The auth middleware compares req.headers.secret === secret; with an empty secret a caller sending no
+	// header would match, so the module must refuse to start rather than run wide open.
+	const start = require('../phlo-whatsapp.js')
+	let refused = false
+	try { start('wa-test', 8099) }
+	catch { refused = true }
+	ok(refused, 'the module refuses to start without a secret')
+
 	console.log(`\nwebhook: ${passed} checks passed`)
 	process.exit(0)
 })().catch(e => { console.error('WEBHOOK TEST FAILED:', e.message); process.exit(1) })

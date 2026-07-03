@@ -19,6 +19,8 @@ const deliverWebhook = async (axios, url, payload, secret, { timeout = 10000, re
 }
 
 module.exports = (sessionId, port, secret, webhook = null) => {
+	// An empty secret makes `req.headers.secret === secret` true for a caller sending no header, so refuse to start.
+	if (!secret) throw new Error('phlo-whatsapp: a non-empty secret is required (it authorizes every request).')
 	const path = require('path')
 	const axios = require('axios')
 	const express = require('express')
