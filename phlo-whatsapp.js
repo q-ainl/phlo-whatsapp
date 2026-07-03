@@ -141,6 +141,7 @@ module.exports = (sessionId, port, secret, webhook = null) => {
 		const chatContact = msg.fromMe && !isGroup ? await getContactById(msg.to) : senderContact
 		const chatNumber = chatContact.number || null
 		const chatId = isGroup ? msg.from : (chatNumber ? `${chatNumber}@c.us` : (msg.fromMe ? msg.to : msg.from))
+		// Multi-device JIDs may carry a device suffix (:NN@); strip it before self-message detection.
 		const normalizeJid = jid => String(jid || '').replace(/:\d+@/, '@')
 		const ownJid = normalizeJid(client.info?.wid?._serialized || client.info?.wid?.user || '')
 		const selfMessage = !isGroup && !!msg.fromMe && !!ownJid && normalizeJid(msg.to).startsWith(ownJid.split('@')[0])
