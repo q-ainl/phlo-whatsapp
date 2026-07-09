@@ -176,11 +176,14 @@ module.exports = (sessionId, port, secret, webhook = null) => {
 	}
 
 	const shortenMediaContent = content => `${content.slice(0, 9)}.. - ${content.length}b`
+	const redactText = text => `${text.length}c`
 
 	const logMessage = msg => {
 		const logMsg = structuredClone(msg)
 		if (logMsg.media?.content) logMsg.media.content = shortenMediaContent(logMsg.media.content)
 		if (logMsg.quotedMsg?.media?.content) logMsg.quotedMsg.media.content = shortenMediaContent(logMsg.quotedMsg.media.content)
+		if (logMsg.text) logMsg.text = redactText(logMsg.text)
+		if (logMsg.quotedMsg?.text) logMsg.quotedMsg.text = redactText(logMsg.quotedMsg.text)
 		console.log('')
 		console.log(logMsg)
 	}
@@ -224,9 +227,8 @@ module.exports = (sessionId, port, secret, webhook = null) => {
 		const id = data.id?._serialized || data.id || '-'
 		const from = data.author || data.from || '-'
 		const to = data.to || '-'
-		const text = (data.body || data.caption || '').replace(/\s+/g, ' ').trim().slice(0, 120)
-		console.log(`\nmessage_create: ${data.type || 'unknown'} fromMe=${!!data.fromMe} from=${from} to=${to} id=${id}`)
-		text && console.log(text)
+		const text = (data.body || data.caption || '').replace(/\s+/g, ' ').trim()
+		console.log(`\nmessage_create: ${data.type || 'unknown'} fromMe=${!!data.fromMe} from=${from} to=${to} id=${id} len=${text.length}`)
 	})
 
 	app.get('/status', (req, res) => {
