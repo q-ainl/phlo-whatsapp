@@ -18,6 +18,17 @@ const deliverWebhook = async (axios, url, payload, secret, { timeout = 10000, re
 	}
 }
 
+// Which account this session is linked to, read from whatsapp-web.js' client.info. A phone account has a
+// wid on the c.us server and its user part is the number; anything else (a lid, nothing yet) gives no
+// number rather than a wrong one. Without this the only way to tell instances apart was to dig through
+// old logs, and a log rotated from before a re-link points at the previous account.
+const linkedInfo = info => {
+	const wid = info?.wid
+	const user = String(wid?.user || '')
+	const isPhone = wid?.server === 'c.us' && /^\d{6,16}$/.test(user)
+	return { number: isPhone ? `+${user}` : null, name: info?.pushname || null, id: wid?._serialized || null }
+}
+
 module.exports = (sessionId, port, secret, webhook = null) => {
 	// An empty secret makes `req.headers.secret === secret` true for a caller sending no header, so refuse to start.
 	if (!secret) throw new Error('phlo-whatsapp: a non-empty secret is required (it authorizes every request).')
@@ -208,7 +219,8 @@ module.exports = (sessionId, port, secret, webhook = null) => {
 		clientReady = true
 		clientState = 'ready'
 		latestQr = null
-		console.log(`\nWhatsApp client "${sessionId}" ready`)
+		const linked = linkedInfo(client.info)
+		console.log(`\nWhatsApp client "${sessionId}" ready as ${linked.number || linked.id || 'unknown'}${linked.name ? ` (${linked.name})` : ''}`)
 		if (webhook) console.log(`\nWebhook active: ${webhook}`)
 	})
 	client.on('authenticated', () => console.log(`\nWhatsApp client "${sessionId}" authenticated`))
@@ -231,16 +243,22 @@ module.exports = (sessionId, port, secret, webhook = null) => {
 		console.log(`\nmessage_create: ${data.type || 'unknown'} fromMe=${!!data.fromMe} from=${from} to=${to} id=${id} len=${text.length}`)
 	})
 
+	// The linked account is only known while ready; before that number and name are null.
+	const linked = () => clientReady ? linkedInfo(client.info) : { number: null, name: null, id: null }
+
 	app.get('/status', (req, res) => {
-		res.json({ ok: true, status: clientState })
+		const { number, name } = linked()
+		res.json({ ok: true, status: clientState, number, name })
 	})
 
 	app.get('/health', (req, res) => {
-		res.json({ ok: true, sessionId, status: clientState, ready: clientReady, webhook: !!webhook, uptime: Math.round((Date.now() - startedAt) / 1000) })
+		const { number, name } = linked()
+		res.json({ ok: true, sessionId, status: clientState, ready: clientReady, number, name, webhook: !!webhook, uptime: Math.round((Date.now() - startedAt) / 1000) })
 	})
 
 	app.get('/qr', (req, res) => {
-		res.json({ ok: true, status: clientState, qr: latestQr })
+		const { number, name } = linked()
+		res.json({ ok: true, status: clientState, qr: latestQr, number, name })
 	})
 
 	app.use((req, res, next) => {
@@ -420,3 +438,4 @@ module.exports = (sessionId, port, secret, webhook = null) => {
 }
 
 module.exports.deliverWebhook = deliverWebhook
+module.exports.linkedInfo = linkedInfo
