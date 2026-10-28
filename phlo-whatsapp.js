@@ -186,6 +186,24 @@ module.exports = (sessionId, port, secret, webhook = null) => {
 		}
 	}
 
+	// getQuotedMessage looks the quote up by id._serialized, which WhatsApp Web no longer fills in, so it
+	// finds nothing while the quote itself rides along in the raw message. Built from there it has no
+	// media, but the id, the sender and the text that a reply is matched on.
+	const quotedFromRaw = data => {
+		const raw = data._data || {}
+		const q = raw.quotedMsg
+		if (!q) return null
+		const text = q.body || q.caption || null
+		return {
+			id: raw.quotedStanzaID || null,
+			from: raw.quotedParticipant?._serialized || raw.quotedParticipant || null,
+			type: q.type || null,
+			text,
+			body: text,
+			media: null,
+		}
+	}
+
 	const shortenMediaContent = content => `${content.slice(0, 9)}.. - ${content.length}b`
 	const redactText = text => `${text.length}c`
 
@@ -295,7 +313,7 @@ module.exports = (sessionId, port, secret, webhook = null) => {
 			}
 			if (data.hasQuotedMsg) {
 				const quoted = await data.getQuotedMessage().catch(() => null)
-				msg.quotedMsg = quoted ? await normalizeMessage(quoted) : null
+				msg.quotedMsg = (quoted ? await normalizeMessage(quoted).catch(() => null) : null) || quotedFromRaw(data)
 			} else {
 				msg.quotedMsg = null
 			}
